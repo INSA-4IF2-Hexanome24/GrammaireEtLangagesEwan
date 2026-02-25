@@ -74,50 +74,37 @@ void InitialiserTables(Action& action, Goto& go_to) {
       go_to[5][VAL_]   = 8;
       go_to[5][OPEN_]  = 8;
 }
-int main(void) {
-   string chaine("(1+34)*123");
-
-   Lexer l(chaine);
-   Pile mot;
-
-   Symbole * s;
-   while(*(s=l.Consulter())!=FIN) {
-      s->Affiche();
-      cout<<endl;
-      l.Avancer();
-   }
-   return 0;
-}
 
 
 
 
-// int main() {
-//     string chaine = "(1+34)*123";
-//     Lexer l(chaine);
 
-//     Pile mot;
-//     Symbole* s;
-//     while (*(s = l.Consulter()) != FIN) {;
+int main() {
+    string chaine = "(1+34)*123";
+    Lexer l(chaine);
+
+    Pile mot;
+    Symbole* s;
+    while (*(s = l.Consulter()) != FIN) {;
       
-//         mot.push_back({s, 0, 0});
-//         l.Avancer();
-//     }
-//     mot.push_back({new Symbole(FIN), 0, 0});
+        mot.push_back({s, 0, 0});
+        l.Avancer();
+    }
+    mot.push_back({new Symbole(FIN), 0, 0});
 
-//     Automate autoLALR;
-//     Action action;
-//     Goto go_to;
+    Automate autoLALR;
+    Action action;
+    Goto go_to;
 
-//     // Initialisation des tables
-//     InitialiserTables(action, go_to);
+    // Initialisation des tables
+    InitialiserTables(action, go_to);
 
-//     int resultat;;
-//     if (autoLALR.AnalyseLALR(mot, action, go_to, 0, resultat)) {
-//         cout << "Résultat = " << resultat << endl;
-//     } else {
-//         cout << "Expression invalide !" << endl;
-//     }
+    int resultat;;
+    if (autoLALR.AnalyseLALR(mot, action, go_to, 0, resultat)) {
+        cout << "Résultat = " << resultat << endl;
+    } else {
+        cout << "Expression invalide !" << endl;
+    }
 
-//     return 0;
-// }
+    return 0;
+}
