@@ -1,16 +1,31 @@
+# ===== Compilateur =====
 CXX = g++
-CXXFLAGS = -Wall -std=c++17
+CXXFLAGS = -Wall -Wextra -std=c++17
 
-SRC = main.cpp Lexer.cpp Automate.cpp
-OBJ = $(SRC:.cpp=.o)
+# ===== Dossiers =====
+BUILD_DIR = Compiled
+TARGET = prog.exe
 
-all: prog
+# ===== Sources =====
+SRC = main.cpp Lexer.cpp Symbole.cpp
 
-prog: $(OBJ)
-	$(CXX) $(OBJ) -o prog
+# ===== Objets dans Compiled/ =====
+OBJ = $(SRC:%.cpp=$(BUILD_DIR)/%.o)
 
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $<
+# ===== Règle principale =====
+all: $(TARGET)
 
+# ===== Edition de liens (exe dans dossier principal) =====
+$(TARGET): $(OBJ)
+	$(CXX) $(OBJ) -o $(TARGET)
+
+# ===== Compilation vers Compiled/ =====
+$(BUILD_DIR)/%.o: %.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+# ===== Nettoyage =====
 clean:
-	del *.o *.exe
+	del /Q $(BUILD_DIR)\*.o 2>nul || true
+	del /Q *.exe 2>nul || true
+
+rebuild: clean all
