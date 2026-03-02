@@ -7,7 +7,8 @@ BUILD_DIR = Compiled
 TARGET = prog.exe
 
 # ===== Sources =====
-SRC = main.cpp Lexer.cpp Symbole.cpp Automate.cpp
+SRC = main.cpp Lexer.cpp Symbole.cpp Automate.cpp Etat.cpp
+
 
 # ===== Objets dans Compiled/ =====
 OBJ = $(SRC:%.cpp=$(BUILD_DIR)/%.o)

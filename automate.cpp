@@ -1,86 +1,80 @@
+#include <algorithm>
 #include "automate.h"
 
+Automate::Automate(string chaine)
+{
+    lexer = new Lexer(chaine);
 
+    Etat *etat0 = new Etat_0("etat0");
+    statestack.push_back(etat0);
+}
 
-bool Automate::AnalyseLALR(const Pile& mot, const Action& action, const Goto& go_to, int etat_initial, int& resultat) {
-    Pile pile;
-    pile.push_back({new Symbole(FIN), etat_initial, 0});
-    
-    Pile entree = mot;
-    entree.push_back({new Symbole(FIN), 0, 0});
-
-    while (!entree.empty()) {
-        ElementPile sommet = pile.back();
-        cout << sommet.etat << " Symbole:" << *(sommet.symbole) << " | ";
-        Symbole* a = entree.front().symbole;
-
-        auto it = action.find(sommet.etat);
-        if (it == action.end()) return false;
-
-        auto jt = it->second.find(a);
-        if (jt == it->second.end()) return false;
-
-        char type = jt->second.first; // 's', 'r', 'a'
-        int num = jt->second.second;
-
-        if (type == 's') { // shift
-            int val = 0;
-            if (Entier* e = dynamic_cast<Entier*>(a)) val = e->getValeur();
-            pile.push_back({a, num, val});
-            entree.pop_front();
-        } else if (type == 'r') { // reduce
-            // dépiler selon la règle num
-            int val = 0;
-            switch(num) {
-                case 2: // E -> E + E
-                    {
-                        ElementPile right = pile.back(); pile.pop_back();
-                        pile.pop_back(); // enlever '+'
-                        ElementPile left = pile.back(); pile.pop_back();
-                        val = left.valeur + right.valeur;
-                    }
-                    break;
-                case 3: // E -> E * E
-                    {
-                        ElementPile right = pile.back(); pile.pop_back();
-                        pile.pop_back(); // enlever '*'
-                        ElementPile left = pile.back(); pile.pop_back();
-                        val = left.valeur * right.valeur;
-                    }
-                    break;
-                case 4: // E -> ( E )
-                    {
-                        pile.pop_back(); // ')'
-                        ElementPile middle = pile.back(); pile.pop_back();
-                        pile.pop_back(); // '('
-                        val = middle.valeur;
-                    }
-                    break;
-                case 5: // E -> val
-                    {
-                        ElementPile e = pile.back(); pile.pop_back();
-                        val = e.valeur;
-                    }
-                    break;
-                default:
-                    break;
-            }
-
-            
-            Symbole* E_sym = new Symbole(INT); // clé pour goto
-            auto it = go_to.find(pile.back().etat);
-            if (it == go_to.end()) return false; // pas de transition
-            auto jt = it->second.find(E_sym);
-            if (jt == it->second.end()) return false;
-
-            int etat_suivant = jt->second;
-            pile.push_back({E_sym, etat_suivant, val});
-
-            pile.push_back({new Symbole(INT), etat_suivant, val});
-        } else if (type == 'a') {
-            resultat = pile.back().valeur;
-            return true;
-        }
+void Automate::analyse()
+{
+    bool nouvelEtat = true;
+    while (nouvelEtat && statestack.back() != NULL)
+    {
+        // printStateStack();
+        Symbole *symbole = lexer->Consulter();
+        // symbole->Affiche();
+        nouvelEtat = statestack.back()->Transition(*this, symbole);
     }
-    return false;
+    cout << "Fin de lecture" << endl;
+    if (*symbolstack.back() != ERREUR)
+    {
+        int resultat = symbolstack.back()->getValue();
+        symbolstack.pop_back();
+        cout << "Expression syntaxiquement correcte" << endl
+             << "Résultat de l'analyse : " << resultat << endl;
+    }
+    else
+    {
+        cout << "Expression non correcte syntaxiquement : caractère invalide" << endl;
+    }
+}
+
+void Automate::decalage(Symbole *s, Etat *e)
+{
+    symbolstack.push_back(s);
+    statestack.push_back(e);
+    lexer->Avancer();
+}
+
+void Automate::transitionSimple(Symbole *s, Etat *e)
+{
+    symbolstack.push_back(s);
+    statestack.push_back(e);
+}
+
+void Automate::reduction(int n, Symbole *s)
+{
+    for (int i = 0; i < n; i++)
+    {
+        delete (statestack.back());
+        statestack.pop_back();
+    }
+    statestack.back()->Transition(*this, s);
+}
+
+Expr *Automate::popSymbole()
+{
+    Expr *e = (Expr *)symbolstack.back();
+    symbolstack.pop_back();
+    return e;
+}
+
+void Automate::popAndDestroySymbole()
+{
+    delete symbolstack.back();
+    symbolstack.pop_back();
+}
+
+void Automate::printStateStack()
+{
+    cout << "Contenu de statestack : ";
+    for (auto it = statestack.rbegin(); it != statestack.rend(); ++it)
+    {
+        cout << (*it)->name << " ";
+    }
+    cout << endl;
 }
